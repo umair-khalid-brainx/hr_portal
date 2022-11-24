@@ -1,33 +1,28 @@
 class CandidatesController < ApplicationController
+  before_action :set_position, only: [:show, :new, :create, :edit, :destroy]
   def show
-    @candidate = Candidate.find(params[:id])
+    @candidate = @position.candidates.find(params[:id])
   end
 
   def new
-    @candidate = Candidate.new
+    @candidate = @position.candidates.new
   end
 
   def create
-    @candidate = Candidate.new(candidate_params)
-    @candidate.picture.attach(candidate_params[:picture])
-    @candidate.cv.attach(candidate_params[:cv])
-    @candidate.docs.attach(candidate_params[:docs])
+    @candidate = @position.candidates.create(candidate_params)
     if @candidate.save
-      redirect_to position_path(@candidate.position.id)
+      redirect_to position_path(@position)
     else
       render :new
     end
   end
 
   def edit
-    @candidate = Candidate.find(params[:id])
+    @candidate = @position.candidates.find(params[:id])
   end
 
   def update
     @candidate = Candidate.find(params[:id])
-    @candidate.picture.attach(params[:picture])
-    @candidate.cv.attach(params[:cv])
-    @candidate.docs.attach(params[:docs])
     if @candidate.update(candidate_params)
       redirect_to position_path(@candidate.position.id)
     else
@@ -36,13 +31,17 @@ class CandidatesController < ApplicationController
   end
 
   def destroy
-    @candidate = Candidate.find(params[:id])
-    @candidate.destroy
-    redirect_to positions_path
+    @candidate = @position.candidates.find(params[:id])
+    @candidate.destroy!
+    redirect_to position_path(@position)
   end
 
   private
   def candidate_params
-    params.require(:candidate).permit(:name, :email, :phone, :university, :gpa, :bio, :status, :position_id, :picture, :cv, docs: [])
+    params.require(:candidate).permit(:name, :email, :phone_number, :university, :gpa, :bio, :status, :picture, :cv, docs: [])
+  end
+
+  def set_position
+    @position = Position.find(params[:position_id])
   end
 end
